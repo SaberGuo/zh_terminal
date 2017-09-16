@@ -3,4 +3,3 @@
 
 you can install the project with TI ccs
 
-##onfiguration
