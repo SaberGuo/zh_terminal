@@ -74,6 +74,14 @@ void th10s_init(){
     th_dma_init();
 }
 
+void th10s_close(){
+    uart_config _th10s_uart_conf = {.gpio_group = GPIO_PORT_P1,
+            .gpio_pins= GPIO_PIN2 | GPIO_PIN3,
+            .port = EUSCI_A0_BASE,
+            .pconf = &th10s_uart_config};
+
+    uart_close(&_th10s_uart_conf);
+}
 void set_serial_flag(uint8_t flag){
     if(flag == SERIAL_READ){
         GPIO_setOutputLowOnPin(GPIO_PORT_P1,GPIO_PIN1);

@@ -9,6 +9,7 @@
 #define APP_TH10S_TH10S_H_
 
 extern void th10s_init();
+extern void th10s_close();
 extern void th10s_process(void);
 
 extern float get_wind_speed();

@@ -57,16 +57,6 @@ int main(){
 
 
 
-#ifdef HAS_TH10S
-    //init for sensor th10s
-    th10s_init();
-#endif
-
-
-#ifdef HAS_CAMERA
-    camera_init();
-#endif
-
 
     while(1){
         if(!main_timer_irq_flag){
@@ -74,13 +64,7 @@ int main(){
         }
 
         if(main_timer_irq_flag){
-            //main_timer_process();
-            adc14_start_sample();
-            delay_ms(100);
-            for(i =0;i<8;++i)
-                printf("adc14 channel %d is %f\n", i, get_adc14_value(i));
-            main_timer_irq_flag = false;
-            adc14_stop_sample();
+            main_timer_process();
         }
 
 
@@ -104,7 +88,6 @@ void main_timer_process(){
      * for(i =0;i<8;++i)
      * printf("adc14 channel %d is %f\n", i, get_adc14_value(i));
      */
-    main_timer_irq_flag = false;
     adc14_stop_sample();
 
 #ifdef HAS_VAISAL
@@ -116,6 +99,12 @@ void main_timer_process(){
     stop_vaisal_rev();
     vaisal_close();
 
+#endif
+
+#ifdef HAS_TH10S
+    th10s_init();
+    th10s_process();
+    th10s_close();
 #endif
     reset_relay(RELAY_K_IO|RELAY_K_IO_POWER);
     //construct the msg
@@ -142,6 +131,7 @@ void main_timer_process(){
     }
 
     //gsm off
+    gsm_close();
     reset_relay(RELAY_K_GSM);
 
     main_timer_irq_flag = false;
