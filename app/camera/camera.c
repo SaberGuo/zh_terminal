@@ -35,11 +35,10 @@ uint8_t camera_init(void){
     wizchip_spi_configuration();
     wiznet_init();
 
-    //tcp_client_init();
-    return 0;
+    tcp_client_init();
 }
 int32_t tcpc_run(char *buffer){
-    int32_t ret = 0; // return value for SOCK_ERRORs
+    int32_t ret; // return value for SOCK_ERRORs
     uint16_t size = 0;
     uint32_t write_size = 0;
     int32_t image_size = 0;
@@ -55,7 +54,7 @@ int32_t tcpc_run(char *buffer){
 
             ret = send(CAMERA_SOCK, "image_capture", strlen("image_capture")+1);
             if( ret <0){
-                sclose(CAMERA_SOCK); // socket close
+                close(CAMERA_SOCK); // socket close
                 return ret;
             }
             while(1){
@@ -71,7 +70,7 @@ int32_t tcpc_run(char *buffer){
                             {
                                 ret = send(CAMERA_SOCK, "image_capture", strlen("image_capture")+1);
                                 if( ret <0){
-                                    sclose(CAMERA_SOCK); // socket sclose
+                                    close(CAMERA_SOCK); // socket close
                                     return ret;
                                 }
                                 if(ret == strlen("image_capture")+1){
@@ -85,13 +84,13 @@ int32_t tcpc_run(char *buffer){
                             image_size = atoi(buffer);
                             ret = send(CAMERA_SOCK, "image_recieving", strlen("image_recieving")+1);
                             if( ret <0 || image_size <0){
-                                sclose(CAMERA_SOCK); // socket sclose
+                                close(CAMERA_SOCK); // socket close
                                 return ret;
                             }
                             else{
                                 camera_stat = IMAGE_RECIEVING;
                                 if((ret = f_open(&image_fil,"image.jpg", FA_WRITE|FA_CREATE_ALWAYS)) != FR_OK){
-                                    sclose(CAMERA_SOCK);
+                                    close(CAMERA_SOCK);
                                     return ret;
                                 }
 
@@ -118,7 +117,7 @@ int32_t tcpc_run(char *buffer){
                             break;
                         case IMAGE_RECIEVED:
                             printf("image recieved!\n");
-                            sclose(CAMERA_SOCK);
+                            close(CAMERA_SOCK);
                             return ret;
                             break;
                         default:
@@ -136,21 +135,18 @@ int32_t tcpc_run(char *buffer){
             if( (ret = connect(CAMERA_SOCK, c_des_ip, c_des_port)) != SOCK_OK) return ret;  //  Try to TCP connect to the TCP server (destination)
             break;
         case SOCK_CLOSED:
-            sclose(CAMERA_SOCK);
+            close(CAMERA_SOCK);
             if((ret=socket(CAMERA_SOCK, Sn_MR_TCP, ANY_PORT, 0x00)) != CAMERA_SOCK) return ret; // TCP socket open with 'any_port' port number
             break;
         default:
             break;
 
     }
-    return ret;
 }
 uint8_t capture_image(void){
     uint16_t any_port =     50000;
 
     int32_t ret; // return value for SOCK_ERRORs
-
-    return 0;
 }
 
 

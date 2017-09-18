@@ -10,7 +10,7 @@
 static uint16_t resultsBuffer[8];
 static volatile float normalizedADCRes[8];
 
-void adc14_init(){
+void ADC14_init(){
     /* Setting reference voltage to 2.5  and enabling reference */
     MAP_REF_A_setReferenceVoltage(REF_A_VREF2_5V);
     MAP_REF_A_enableReferenceVoltage();
@@ -63,28 +63,14 @@ void adc14_init(){
     MAP_Interrupt_enableInterrupt(INT_ADC14);
     MAP_Interrupt_enableMaster();
 
-
-
-
-}
-
-void adc14_start_sample(){
     /* Setting up the sample timer to automatically step through the sequence
      * convert.
      */
     MAP_ADC14_enableSampleTimer(ADC_AUTOMATIC_ITERATION);
+
     /* Triggering the start of the sample */
     MAP_ADC14_enableConversion();
     MAP_ADC14_toggleConversionTrigger();
-}
-
-void adc14_stop_sample(){
-    /* Triggering the start of the sample */
-    MAP_ADC14_disableConversion();
-    //MAP_ADC14_toggleConversionTrigger();
-    MAP_ADC14_disableSampleTimer();
-
-
 }
 /*
  * get_adc14_value
@@ -115,7 +101,7 @@ void ADC14_IRQHandler(void)
         MAP_ADC14_getMultiSequenceResult(resultsBuffer);
         for(i = 0; i < 8; i ++)
         {
-            normalizedADCRes[i] = (resultsBuffer[i] * 5.0) / 16384;
+            normalizedADCRes[i] = (resultsBuffer[i] * 2.5) / 16384;
         }
     }
     i++;

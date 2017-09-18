@@ -36,12 +36,12 @@ void timer_init(){
     MAP_Timer_A_configureContinuousMode(TIMER_A1_BASE, &timer_config);
     MAP_Interrupt_enableInterrupt(INT_TA1_N);
     MAP_Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_CONTINUOUS_MODE);
+
 }
 
 /*
  * delay
  * time  ms for delay
  */
-
 
 

@@ -33,8 +33,8 @@ char *AT_CIPHEAD="AT+CIPHEAD=0\r\n";
 char *AT_CIPSRIP="AT+CIPSRIP=0\r\n";
 char *AT_CSCLK="AT+CSCLK=1\r\n";
 char *AT_CGSOCKCONT="AT+CGSOCKCONT=1,\"IP\",\"cmnet\"\r\n";
-char *IP="115.159.157.229";
-char *COM="6666";
+char *IP="120.77.34.29";
+char *COM="8989";
 
 char *AT_CIPOPEN_TCP="AT+CIPOPEN=0,\"TCP\",\"%s\",%s\r\n";
 

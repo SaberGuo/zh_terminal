@@ -12,6 +12,4 @@ void spi_init(spi_config* spi_config){
                                                    spi_config->gpio_pins, GPIO_PRIMARY_MODULE_FUNCTION);
     MAP_SPI_initMaster(spi_config->port, spi_config->pconf);
     MAP_SPI_enableModule(spi_config->port);
-
-
 }
