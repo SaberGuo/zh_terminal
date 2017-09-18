@@ -51,21 +51,19 @@ void vaisal_init(void){
      .port = EUSCI_A0_BASE,
      .pconf = &vaisal_uart_config};
 
-
      uart_init(&_vaisal_uart_conf);
 
-
-
+     /*
+      uart_config _vaisal_uart_config =
+      {
+             GPIO_PORT_P1,
+             GPIO_PIN2 | GPIO_PIN3,
+             EUSCI_A0_BASE,
+             &vaisal_uart_config
+      };
+      */
 }
 
-void vaisal_close(void){
-    uart_config _vaisal_uart_conf = {.gpio_group = GPIO_PORT_P1,
-        .gpio_pins= GPIO_PIN2 | GPIO_PIN3,
-        .port = EUSCI_A0_BASE,
-        .pconf = &vaisal_uart_config};
-
-    uart_close(&_vaisal_uart_conf);
-}
 
 void start_vaisal_rev(){
     MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
@@ -103,7 +101,6 @@ uint8_t vaisal_process(){
                     vaisal_datas[i].completed = 1;
                 }
             }
-
         }
     }
     uint8_t all_completed = 1;

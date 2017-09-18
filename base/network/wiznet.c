@@ -9,44 +9,36 @@
 #include "network/Ethernet/wizchip_conf.h"
 #include "network/Ethernet/socket.h"
 #include "spi/spi.h"
-#include "clocks/clocks.h"
 
 
 
 
 const eUSCI_SPI_MasterConfig wiznet_spi_config =
 {
-        EUSCI_B_SPI_CLOCKSOURCE_SMCLK,             // SMCLK Clock Source
-        4000000,                                   // SMCLK = DCO = 24MHZ
+        EUSCI_A_SPI_CLOCKSOURCE_SMCLK,             // SMCLK Clock Source
+        24000000,                                   // SMCLK = DCO = 24MHZ
         100000,                                    // SPICLK = 100KHZ
-        EUSCI_SPI_MSB_FIRST,                     // MSB First
-        EUSCI_B_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT,    // 时钟相位0
-        EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW, // 时钟极性1
-        EUSCI_B_SPI_3PIN
+        EUSCI_A_SPI_MSB_FIRST,                     // MSB First
+        EUSCI_A_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT,    // 时钟相位0
+        EUSCI_A_SPI_CLOCKPOLARITY_INACTIVITY_HIGH, // 时钟极性1
+        EUSCI_SPI_4PIN_UCxSTE_ACTIVE_LOW
 };
 
 //SPI port B2--P3.4,P3.5,P3.6,P3.7
 void wizchip_spi_configuration(){
     //initialize spi port
-    spi_config wiznet_spi_conf = {.port = EUSCI_B3_BASE,
-                                      .gpio_group = GPIO_PORT_P10,
-                                      .gpio_pins = GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2 | GPIO_PIN3,
+    spi_config wiznet_spi_conf = {.port = EUSCI_B2_BASE,
+                                      .gpio_group = GPIO_PORT_P3,
+                                      .gpio_pins = GPIO_PIN4 | GPIO_PIN5 | GPIO_PIN6 | GPIO_PIN7,
                                       .pconf = &wiznet_spi_config};
 
     spi_init(&wiznet_spi_conf);
-
-
 
     //initialize wiznet
     reg_wizchip_cs_cbfunc(wizchip_cs_sel, wizchip_cs_desel);
     reg_wizchip_spi_cbfunc(wizchip_spi_readbyte, wizchip_spi_writebyte);
     //reg_wizchip_spiburst_cbfunc(wizchip_spi_readburst, wizchip_spi_writeburst);
 
-    //rst set
-    MAP_GPIO_setAsOutputPin(GPIO_PORT_P8, GPIO_PIN0);
-    MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P8, GPIO_PIN0);
-    delay_us(500);
-    MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P8, GPIO_PIN0);
 }
 
 void wiznet_init(){
@@ -81,18 +73,17 @@ int wizchip_spi_read_write(uint8_t data)
 {
     //< Loop while DR register in not emplty  判断SPI总线是否空闲
     //while (SPI_I2S_GetFlagStatus(SPIX, SPI_I2S_FLAG_TXE) == RESET);
-    while (!(SPI_getInterruptStatus(EUSCI_B3_BASE,EUSCI_B_SPI_TRANSMIT_INTERRUPT)));
+    while (!(SPI_getInterruptStatus(EUSCI_B2_BASE,EUSCI_B_SPI_TRANSMIT_INTERRUPT)));
 
     //< Send byte through the SPI1 peripheral
     //SPI_I2S_SendData(SPIX, data);
-    SPI_transmitData(EUSCI_B3_BASE,data);
-    delay_us(10);
+    SPI_transmitData(EUSCI_A1_BASE,data);
     //< Wait to receive a byte
     //while (SPI_I2S_GetFlagStatus(SPIX, SPI_I2S_FLAG_RXNE) == RESET);
-    while (!(SPI_getInterruptStatus(EUSCI_B3_BASE,EUSCI_B_SPI_RECEIVE_INTERRUPT)));
+    while (!(SPI_getInterruptStatus(EUSCI_B2_BASE,EUSCI_B_SPI_RECEIVE_INTERRUPT)));
 
     // < Return the byte read from the SPI bus
-    return SPI_receiveData(EUSCI_B3_BASE);
+    return SPI_receiveData(EUSCI_B2_BASE);
 }
 void wizchip_cs_sel(){
     wiznet_enable();

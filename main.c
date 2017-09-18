@@ -34,13 +34,13 @@ bool main_timer_irq_flag = false;
 
 int main(){
     /* Halting WDT  */
-    uint8_t i = 0;
     MAP_WDT_A_holdTimer();
     //MAP_Interrupt_enableSleepOnIsrExit();
 
     //relay init
     config_relay(RELAY_K_GSM|RELAY_K_CAMERA|RELAY_K_IO|RELAY_K_IO_POWER);
     reset_relay(RELAY_K_GSM|RELAY_K_CAMERA|RELAY_K_IO|RELAY_K_IO_POWER);
+
     //dcdc disable
     power_manage_init();
     dc_5v_disable();
@@ -56,8 +56,6 @@ int main(){
 
 
 
-
-
     while(1){
         if(!main_timer_irq_flag){
             MAP_PCM_gotoLPM3();
@@ -66,16 +64,15 @@ int main(){
         if(main_timer_irq_flag){
             main_timer_process();
         }
-
-
     }
-
 }
 
 void main_timer_process(){
 
     bool ret = false;
     uint8_t i = 0;
+
+   
     //open 485 serial port and IO 12V
     set_relay(RELAY_K_IO|RELAY_K_IO_POWER);
     dc_5v_enable();
@@ -95,7 +92,7 @@ void main_timer_process(){
     vaisal_init();
     delay_ms(1000); //wait for 10s with
     start_vaisal_rev();
-    delay_ms(10000);
+    delay_ms(1000);
     stop_vaisal_rev();
     vaisal_close();
 
@@ -106,10 +103,12 @@ void main_timer_process(){
     th10s_process();
     th10s_close();
 #endif
+
     reset_relay(RELAY_K_IO|RELAY_K_IO_POWER);
+    
+
     //construct the msg
 
-    //gsm on
     set_relay(RELAY_K_GSM);
     gsm_init();
     gsm_connect();
@@ -137,8 +136,6 @@ void main_timer_process(){
     main_timer_irq_flag = false;
 
 
-
-
 }
 
 //main timer for process
@@ -150,3 +147,5 @@ void TA1_N_IRQHandler(void)
 
 
 }
+
+
