@@ -66,16 +66,14 @@ void set_relay(uint8_t relay_no)
     if(relay_no&RELAY_K_GSM)
     {
         GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN0);
-        for(i=100000; i>0; i--){
-            _nop();
-        }
+        for(i=100000; i>0; i--);
         GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN0);
     }
     if(relay_no&RELAY_K_CAMERA)
     {
         GPIO_setOutputHighOnPin(GPIO_PORT_P6, GPIO_PIN0);
-        for(i=100000; i>0; i--)
-            ;
+        for(i=100000; i>0; i--);
+            
         GPIO_setOutputLowOnPin(GPIO_PORT_P6, GPIO_PIN0);
     }
     if(relay_no&RELAY_K_IO_POWER)

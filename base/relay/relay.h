@@ -9,7 +9,6 @@
 #define LPCRELAY_LPC_RELAY_H_
 
 #include "comm.h"
-#include <_lock.h>
 
 #define RELAY_K_GSM 1
 #define RELAY_K_CAMERA 2

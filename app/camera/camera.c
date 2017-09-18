@@ -54,7 +54,7 @@ int32_t tcpc_run(char *buffer){
 
             ret = send(CAMERA_SOCK, "image_capture", strlen("image_capture")+1);
             if( ret <0){
-                close(CAMERA_SOCK); // socket close
+                sclose(CAMERA_SOCK); // socket close
                 return ret;
             }
             while(1){
@@ -70,7 +70,7 @@ int32_t tcpc_run(char *buffer){
                             {
                                 ret = send(CAMERA_SOCK, "image_capture", strlen("image_capture")+1);
                                 if( ret <0){
-                                    close(CAMERA_SOCK); // socket close
+                                    sclose(CAMERA_SOCK); // socket close
                                     return ret;
                                 }
                                 if(ret == strlen("image_capture")+1){
@@ -84,13 +84,13 @@ int32_t tcpc_run(char *buffer){
                             image_size = atoi(buffer);
                             ret = send(CAMERA_SOCK, "image_recieving", strlen("image_recieving")+1);
                             if( ret <0 || image_size <0){
-                                close(CAMERA_SOCK); // socket close
+                                sclose(CAMERA_SOCK); // socket close
                                 return ret;
                             }
                             else{
                                 camera_stat = IMAGE_RECIEVING;
                                 if((ret = f_open(&image_fil,"image.jpg", FA_WRITE|FA_CREATE_ALWAYS)) != FR_OK){
-                                    close(CAMERA_SOCK);
+                                    sclose(CAMERA_SOCK);
                                     return ret;
                                 }
 
@@ -117,7 +117,7 @@ int32_t tcpc_run(char *buffer){
                             break;
                         case IMAGE_RECIEVED:
                             printf("image recieved!\n");
-                            close(CAMERA_SOCK);
+                            sclose(CAMERA_SOCK);
                             return ret;
                             break;
                         default:

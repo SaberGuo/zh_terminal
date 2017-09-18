@@ -63,15 +63,27 @@ void ADC14_init(){
     MAP_Interrupt_enableInterrupt(INT_ADC14);
     MAP_Interrupt_enableMaster();
 
-    /* Setting up the sample timer to automatically step through the sequence
-     * convert.
-     */
-    MAP_ADC14_enableSampleTimer(ADC_AUTOMATIC_ITERATION);
-
-    /* Triggering the start of the sample */
-    MAP_ADC14_enableConversion();
-    MAP_ADC14_toggleConversionTrigger();
 }
+
+void adc14_start_sample(){
+      /* Setting up the sample timer to automatically step through the sequence
+       * convert.
+       */
+      MAP_ADC14_enableSampleTimer(ADC_AUTOMATIC_ITERATION);
+ 
+      /* Triggering the start of the sample */
+      MAP_ADC14_enableConversion();
+      MAP_ADC14_toggleConversionTrigger();
+  }
+
+void adc14_stop_sample(){
+     /* Triggering the start of the sample */
+     MAP_ADC14_disableConversion();
+     //MAP_ADC14_toggleConversionTrigger();
+     MAP_ADC14_disableSampleTimer();
+ 
+ 
+ }
 /*
  * get_adc14_value
  * return the value for voltage ref 2.5V, the range of value is 0--2.5
