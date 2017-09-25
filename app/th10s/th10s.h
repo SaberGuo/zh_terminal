@@ -11,7 +11,7 @@
 extern void th10s_init();
 extern void th10s_process(void);
 
-extern float get_wind_speed();
-extern float get_wind_direction();
+extern float get_temperature();
+extern float get_humility();
 
 #endif /* APP_TH10S_TH10S_H_ */

@@ -16,7 +16,7 @@
 
 #include "driverlib/driverlib.h"
 
-#define HAS_VAISAL
+#define HAS_TH10S
 //#define HAS_TH10S
 
 
