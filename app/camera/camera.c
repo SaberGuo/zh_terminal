@@ -35,7 +35,6 @@ uint8_t camera_init(void){
     wizchip_spi_configuration();
     wiznet_init();
 
-    tcp_client_init();
 }
 int32_t tcpc_run(char *buffer){
     int32_t ret; // return value for SOCK_ERRORs
@@ -58,6 +57,7 @@ int32_t tcpc_run(char *buffer){
                 return ret;
             }
             while(1){
+                memset(buffer,0,DATA_BUF_SIZE);
                 if((size = getSn_RX_RSR(CAMERA_SOCK)) > 0) // Sn_RX_RSR: Socket n Received Size Register, Receiving data length
                 {
                     if(size > DATA_BUF_SIZE) size = DATA_BUF_SIZE; // DATA_BUF_SIZE means user defined buffer size (array)
@@ -68,12 +68,13 @@ int32_t tcpc_run(char *buffer){
                         case START:
                             if(strcmp(buffer, "image_captured") == 0)
                             {
-                                ret = send(CAMERA_SOCK, "image_capture", strlen("image_capture")+1);
+                                printf("image_captured!\n");
+                                ret = send(CAMERA_SOCK, "image_size", strlen("image_size")+1);
                                 if( ret <0){
                                     sclose(CAMERA_SOCK); // socket close
                                     return ret;
                                 }
-                                if(ret == strlen("image_capture")+1){
+                                if(ret == strlen("image_size")+1){
                                     camera_stat = IMAGE_SIZE_REVING;
                                     rev_image_size = 0;
                                     //write file to tf card
@@ -82,26 +83,30 @@ int32_t tcpc_run(char *buffer){
                             break;
                         case IMAGE_SIZE_REVING:
                             image_size = atoi(buffer);
+                            printf("recieved image size:%d\n", image_size);
                             ret = send(CAMERA_SOCK, "image_recieving", strlen("image_recieving")+1);
                             if( ret <0 || image_size <0){
                                 sclose(CAMERA_SOCK); // socket close
                                 return ret;
                             }
                             else{
+
                                 camera_stat = IMAGE_RECIEVING;
-                                if((ret = f_open(&image_fil,"image.jpg", FA_WRITE|FA_CREATE_ALWAYS)) != FR_OK){
+                                /*if((ret = f_open(&image_fil,"image.jpg", FA_WRITE|FA_CREATE_ALWAYS)) != FR_OK){
                                     sclose(CAMERA_SOCK);
+                                    printf("open file failed!\n");
                                     return ret;
-                                }
+                                }*/
 
                             }
                             break;
                         case IMAGE_RECIEVING:
+                            printf("image file recieved size:%d\n", size);
                             if(rev_image_size<image_size){
-                                f_write(&image_fil, buffer, size, &write_size);
+                                //f_write(&image_fil, buffer, size, &write_size);
                                 rev_image_size+=write_size;
                                 if(rev_image_size == image_size){
-                                    f_close(&image_fil);
+                                    //f_close(&image_fil);
 
                                     camera_stat = IMAGE_RECIEVED;
                                     ret = send(CAMERA_SOCK, "image_recieved", strlen("image_recieved")+1);
@@ -142,6 +147,7 @@ int32_t tcpc_run(char *buffer){
             break;
 
     }
+    return ret;
 }
 uint8_t capture_image(void){
     uint16_t any_port =     50000;

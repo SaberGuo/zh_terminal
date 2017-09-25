@@ -10,7 +10,7 @@
 static uint16_t resultsBuffer[8];
 static volatile float normalizedADCRes[8];
 
-void ADC14_init(){
+void adc14_init(){
     /* Setting reference voltage to 2.5  and enabling reference */
     MAP_REF_A_setReferenceVoltage(REF_A_VREF2_5V);
     MAP_REF_A_enableReferenceVoltage();

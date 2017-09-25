@@ -5,8 +5,8 @@
 
 #include "comm.h"
 
-#define wiznet_disable()          SPI_selectFourPinFunctionality(EUSCI_A1_BASE,EUSCI_SPI_ENABLE_SIGNAL_FOR_4WIRE_SLAVE )
-#define wiznet_enable()         SPI_selectFourPinFunctionality(EUSCI_A1_BASE,EUSCI_SPI_PREVENT_CONFLICTS_WITH_OTHER_MASTERS)
+//#define wiznet_disable()          SPI_selectFourPinFunctionality(EUSCI_A1_BASE,EUSCI_SPI_ENABLE_SIGNAL_FOR_4WIRE_SLAVE )
+//#define wiznet_enable()         SPI_selectFourPinFunctionality(EUSCI_A1_BASE,EUSCI_SPI_PREVENT_CONFLICTS_WITH_OTHER_MASTERS)
 #define WIZNET_BYTE              0x00
 #define WIZNET_ERROR             0
 //ifdefine with debug printf

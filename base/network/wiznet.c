@@ -15,13 +15,13 @@
 
 const eUSCI_SPI_MasterConfig wiznet_spi_config =
 {
-        EUSCI_A_SPI_CLOCKSOURCE_SMCLK,             // SMCLK Clock Source
+        EUSCI_B_SPI_CLOCKSOURCE_SMCLK,             // SMCLK Clock Source
         24000000,                                   // SMCLK = DCO = 24MHZ
-        100000,                                    // SPICLK = 100KHZ
-        EUSCI_A_SPI_MSB_FIRST,                     // MSB First
-        EUSCI_A_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT,    // 时钟相位0
-        EUSCI_A_SPI_CLOCKPOLARITY_INACTIVITY_HIGH, // 时钟极性1
-        EUSCI_SPI_4PIN_UCxSTE_ACTIVE_LOW
+        12000000,                                    // SPICLK = 12MHZ
+        EUSCI_B_SPI_MSB_FIRST,                     // MSB First
+        EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT,    // 时钟相位0
+        EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW, // 时钟极性1
+        EUSCI_SPI_3PIN
 };
 
 //SPI port B2--P3.4,P3.5,P3.6,P3.7
@@ -34,10 +34,13 @@ void wizchip_spi_configuration(){
 
     spi_init(&wiznet_spi_conf);
 
+    //init with io
+    GPIO_setAsOutputPin(GPIO_PORT_P3, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P3, GPIO_PIN4);
     //initialize wiznet
     reg_wizchip_cs_cbfunc(wizchip_cs_sel, wizchip_cs_desel);
     reg_wizchip_spi_cbfunc(wizchip_spi_readbyte, wizchip_spi_writebyte);
-    //reg_wizchip_spiburst_cbfunc(wizchip_spi_readburst, wizchip_spi_writeburst);
+    reg_wizchip_spiburst_cbfunc(wizchip_spi_readburst, wizchip_spi_writeburst);
 
 }
 
@@ -77,7 +80,7 @@ int wizchip_spi_read_write(uint8_t data)
 
     //< Send byte through the SPI1 peripheral
     //SPI_I2S_SendData(SPIX, data);
-    SPI_transmitData(EUSCI_A1_BASE,data);
+    SPI_transmitData(EUSCI_B2_BASE,data);
     //< Wait to receive a byte
     //while (SPI_I2S_GetFlagStatus(SPIX, SPI_I2S_FLAG_RXNE) == RESET);
     while (!(SPI_getInterruptStatus(EUSCI_B2_BASE,EUSCI_B_SPI_RECEIVE_INTERRUPT)));
@@ -86,11 +89,13 @@ int wizchip_spi_read_write(uint8_t data)
     return SPI_receiveData(EUSCI_B2_BASE);
 }
 void wizchip_cs_sel(){
-    wiznet_enable();
+    //wiznet_enable();
+    GPIO_setOutputLowOnPin(GPIO_PORT_P3, GPIO_PIN4);
 }
 
 void wizchip_cs_desel(){
-    wiznet_disable();
+    GPIO_setOutputHighOnPin(GPIO_PORT_P3, GPIO_PIN4); 
+    //wiznet_disable();
 }
 uint8_t wizchip_spi_readbyte(void){
     return wizchip_spi_read_write(WIZNET_BYTE);

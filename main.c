@@ -14,6 +14,10 @@
 #include "app/protocol/protocol.h"
 #include "app/power/power.h"
 
+#ifdef IS_TEST
+#include "test.h"
+#endif
+
 
 #ifdef HAS_VAISAL
 #include "app/vaisal/vaisal.h"
@@ -31,6 +35,7 @@
 
 FATFS fatfs;
 bool main_timer_irq_flag = false;
+bool img_timer_irq_flag = false;
 
 int main(){
     /* Halting WDT  */
@@ -39,6 +44,12 @@ int main(){
 
     //relay init
     config_relay(RELAY_K_GSM|RELAY_K_CAMERA|RELAY_K_IO|RELAY_K_IO_POWER);
+
+#ifdef IS_TEST
+    //camera_test();
+    tfcard_test();
+#else
+
     reset_relay(RELAY_K_GSM|RELAY_K_CAMERA|RELAY_K_IO|RELAY_K_IO_POWER);
 
     //dcdc disable
@@ -57,14 +68,24 @@ int main(){
 
 
     while(1){
-        if(!main_timer_irq_flag){
+        if(!(main_timer_irq_flag|img_timer_irq_flag)){
             MAP_PCM_gotoLPM3();
         }
 
         if(main_timer_irq_flag){
             main_timer_process();
         }
+
+        if(img_timer_irq_flag){
+            img_timer_process();
+        }
     }
+#endif
+}
+void img_timer_process(){
+
+    //
+    img_timer_irq_flag = false;
 }
 
 void main_timer_process(){
@@ -72,11 +93,12 @@ void main_timer_process(){
     bool ret = false;
     uint8_t i = 0;
 
+    dc_5v_enable();
+    dc_33v_enable();
    
     //open 485 serial port and IO 12V
     set_relay(RELAY_K_IO|RELAY_K_IO_POWER);
-    dc_5v_enable();
-    dc_33v_enable();
+    
 
     //adc sample
     adc14_start_sample();
@@ -92,9 +114,9 @@ void main_timer_process(){
     vaisal_init();
     delay_ms(1000); //wait for 10s with
     start_vaisal_rev();
-    delay_ms(1000);
+    delay_ms(4000);
     stop_vaisal_rev();
-    vaisal_close();
+    
 
 #endif
 
@@ -106,6 +128,9 @@ void main_timer_process(){
 
     reset_relay(RELAY_K_IO|RELAY_K_IO_POWER);
     
+#ifdef HAS_VAISAL
+    vaisal_close();
+#endif 
 
     //construct the msg
 
@@ -145,7 +170,13 @@ void TA1_N_IRQHandler(void)
     MAP_Timer_A_clearInterruptFlag(TIMER_A1_BASE);
     main_timer_irq_flag = true;
 
+}
 
+//img collection timer for process
+void TA0_N_IRQHandler(void)
+{
+    MAP_Timer_A_clearInterruptFlag(TIMER_A0_BASE);
+    img_timer_irq_flag = true;
 }
 
 
