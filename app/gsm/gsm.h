@@ -10,6 +10,7 @@
 
 #include "comm.h"
 
+extern char *AT_CIPSEND;
 #define MAX_TX_BUFFER 1024
 #define MAX_RX_BUFFER 2048
 
@@ -19,6 +20,7 @@
 #define open_net()          _msg_send(AT_NETOPEN)
 #define close_net()         _msg_send(AT_NETCLOSE)
 
+extern bool isFinished;
 
 //GSM各管脚，RI接收中断初始化
 extern void gsm_init();
@@ -39,5 +41,7 @@ extern void gsm_connect();
 extern void clear_buffer();
 
 extern char * msg_read();
+
+extern void _msg_send_nodelay(char *message);
 
 #endif /* APP_GSM_GSM_H_ */

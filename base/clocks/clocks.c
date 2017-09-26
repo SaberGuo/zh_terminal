@@ -9,12 +9,19 @@
 #include "clocks.h"
 
 //65535/ACLK CLOCK*divider=64s
-const Timer_A_ContinuousModeConfig timer_config =
+const Timer_A_ContinuousModeConfig data_collection_timer_config =
 {
         TIMER_A_CLOCKSOURCE_ACLK,           // ACLK Clock = 1024
         TIMER_A_CLOCKSOURCE_DIVIDER_1,      //
         TIMER_A_TAIE_INTERRUPT_ENABLE,      // Enable Overflow ISR
         TIMER_A_DO_CLEAR                    // Clear Counter
+};
+const Timer_A_ContinuousModeConfig img_collection_timer_config =
+{
+         TIMER_A_CLOCKSOURCE_ACLK,           // ACLK Clock = 1024
+         TIMER_A_CLOCKSOURCE_DIVIDER_1,      //
+         TIMER_A_TAIE_INTERRUPT_ENABLE,      // Enable Overflow ISR
+         TIMER_A_DO_CLEAR                    // Clear Counter
 };
 
 void clock_init(){
@@ -22,7 +29,7 @@ void clock_init(){
     MAP_FlashCtl_setWaitState(FLASH_BANK0, 2);
     MAP_FlashCtl_setWaitState(FLASH_BANK1, 2);
 
-    MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_6);//DCO 6MHz
+    MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_24);//DCO 24MHz
 
     MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     MAP_CS_setReferenceOscillatorFrequency(CS_REFO_32KHZ);
@@ -33,9 +40,16 @@ void clock_init(){
 
 void timer_init(){
 
-    MAP_Timer_A_configureContinuousMode(TIMER_A1_BASE, &timer_config);
+    //data collection
+    MAP_Timer_A_configureContinuousMode(TIMER_A1_BASE, &data_collection_timer_config);
     MAP_Interrupt_enableInterrupt(INT_TA1_N);
     MAP_Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_CONTINUOUS_MODE);
+
+    //img collection
+    //MAP_Timer_A_configureContinuousMode(TIMER_A0_BASE, &img_collection_timer_config);
+    //MAP_Interrupt_enableInterrupt(INT_TA0_N);
+    //MAP_Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);
+
 
 }
 

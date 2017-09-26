@@ -19,6 +19,7 @@
 
 #define MAX_WAIT_SECONDS 10
 
+bool isFinished = false;
 char *COMMON="[common]";
 char *AT_IPR="AT+IPR=921600\r\n";
 char *AT_CGSOCKCONT_IP_COM="AT+CGSOCKCONT=1,\"IP\",\"cmnet\"\r\n";
@@ -51,10 +52,10 @@ bool msg_reved = false;
 
 const eUSCI_UART_Config gsm_uart_config=
 {
-     EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // 选择SMCLK时钟为源，6MHz
-     3,                                      // bps=115200;
-     4,                                       // UCxBRF = 0
-     2,                                      // UCxBRS = 37
+     EUSCI_A_UART_CLOCKSOURCE_SMCLK,          // 选择SMCLK时钟为源，12MHz
+     13,                                      // bps=115200;
+     0,                                       // UCxBRF = 0
+     37,                                      // UCxBRS = 37
      EUSCI_A_UART_NO_PARITY,                  // No Parity
      EUSCI_A_UART_LSB_FIRST,                  // LSB First
      EUSCI_A_UART_ONE_STOP_BIT,               // One stop bit
@@ -70,7 +71,7 @@ void gsm_on()
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN7);
     delay_ms(500);
     MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN7);
-    delay_ms(15000);                        //开机需要20s寻找网络
+    delay_ms(5000);                        //开机需要20s寻找网络
 }
 
 void gsm_off()
@@ -95,6 +96,10 @@ void gsm_dma_init()
     MAP_DMA_setChannelControl(UDMA_PRI_SELECT | DMA_CH2_EUSCIA1TX,
            UDMA_SIZE_8 | UDMA_SRC_INC_8 | UDMA_DST_INC_NONE | UDMA_ARB_1);
 
+    MAP_DMA_assignInterrupt(DMA_INT1, 2);
+    MAP_Interrupt_enableInterrupt(INT_DMA_INT1);
+    MAP_DMA_enableChannel(2);
+    MAP_DMA_requestSoftwareTransfer(2);
 }
 
 void gsm_conf_init()
@@ -137,7 +142,8 @@ void gsm_init()
     MAP_Interrupt_enableInterrupt(INT_EUSCIA1);
 
     //gsm_on
-    delay_ms(20000);
+    //gsm_on();
+    delay_ms(5000);
     gsm_dma_init();
     gsm_conf_init();
 
@@ -156,7 +162,7 @@ void gsm_close(void){
 void _msg_send(char *message)
 {
     uint16_t length;
-    //isFinished=false;
+    isFinished=false;
     memset(tx_buffer, '\0', MAX_TX_BUFFER);
     length=strlen(message);
     strcpy(tx_buffer,message);
@@ -207,6 +213,20 @@ char * msg_read()
     return gsm_rec_buffer;
 }
 
+void _msg_send_nodelay(char *message)
+{
+    uint16_t length;
+    isFinished=false;
+    memset(tx_buffer, '\0', MAX_TX_BUFFER);
+    length=strlen(message);
+    strcpy(tx_buffer,message);
+
+    MAP_DMA_setChannelTransfer(UDMA_PRI_SELECT | DMA_CH2_EUSCIA1TX,
+                           UDMA_MODE_BASIC, tx_buffer,
+            (void*) UART_getTransmitBufferAddressForDMA(EUSCI_A1_BASE), length);
+
+    MAP_DMA_enableChannel(DMA_CH2_EUSCIA1TX);
+}
 
 
 //GSM RI IRQ
@@ -240,6 +260,12 @@ void EUSCIA1_IRQHandler(void)
         }
     }
 
+}
+
+void DMA_INT1_IRQHandler(void)
+{
+    //MAP_DMA_disableChannel(DMA_CH4_EUSCIA2TX);
+    isFinished = true;
 }
 
 

@@ -11,6 +11,7 @@
 #include "comm.h"
 
 extern bool upload_data_start();
+extern bool upload_image_start();
 extern bool upload_data(char * key, float value);
 extern bool upload_data_end();
 

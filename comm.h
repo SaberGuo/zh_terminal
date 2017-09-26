@@ -16,7 +16,8 @@
 
 #include "driverlib/driverlib.h"
 
-#define HAS_TH10S
+
+#define IS_TEST
 //#define HAS_TH10S
 
 

@@ -9,7 +9,12 @@
 #include "spi/spi.h"
 #include "fatfs/diskio.h"
 
+#define TFCARD_LOW_SPEED    0
+#define TFCARD_HIGH_SPEED   1
+#define PRINT_INFO
+
 MSD_CARDINFO tfcard_info;
+extern DSTATUS Stat;
 
 
 const eUSCI_SPI_MasterConfig tf_spi_config =
@@ -17,6 +22,17 @@ const eUSCI_SPI_MasterConfig tf_spi_config =
         EUSCI_B_SPI_CLOCKSOURCE_SMCLK,             // SMCLK Clock Source
         24000000,                                   // SMCLK = DCO = 24MHZ
         12000000,                                    // SPICLK = 12MHZ
+        EUSCI_B_SPI_MSB_FIRST,                     // MSB First
+        EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT,    // 时钟相位0
+        EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW, // 时钟极性0
+        EUSCI_SPI_4PIN_UCxSTE_ACTIVE_LOW
+};
+
+const eUSCI_SPI_MasterConfig tf_lowspeed_spi_config =
+{
+        EUSCI_B_SPI_CLOCKSOURCE_SMCLK,             // SMCLK Clock Source
+        24000000,                                   // SMCLK = DCO = 24MHZ
+        1200000,                                    // SPICLK = 12MHZ
         EUSCI_B_SPI_MSB_FIRST,                     // MSB First
         EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT,    // 时钟相位0
         EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW, // 时钟极性0
@@ -51,6 +67,30 @@ void tfcard_driver_config()
     //关闭片选
     tfcard_disable();
 
+}
+/*******************************************************************************
+* Function Name  : MSD0_SPIHighSpeed
+* Description    : SD Card Speed Set
+* Input          : - b_high: 1 = 2MHz, 0 = 32KHz
+* Output         : None
+* Return         : None
+* Attention      : None
+*******************************************************************************/
+void tfcard_spi_highspeed(uint8_t b_high)
+{
+    spi_config tfcard_spi_conf = {.port = EUSCI_B1_BASE,
+                                      .gpio_group = GPIO_PORT_P6,
+                                      .gpio_pins = GPIO_PIN2 | GPIO_PIN3 | GPIO_PIN4 | GPIO_PIN5,
+                                      .pconf = &tf_spi_config};
+
+
+    /* Speed select */
+    if(b_high == TFCARD_LOW_SPEED)
+    {
+        tfcard_spi_conf.pconf = &tf_lowspeed_spi_config;
+    }
+
+    spi_init(&tfcard_spi_conf);
 }
 
 /*******************************************************************************
@@ -92,10 +132,10 @@ int tfcard_init(void)
     uint8_t r1,r2;
     uint8_t buff[6] = {0};
     uint16_t retry;
-    DSTATUS Stat;
 
-    //
-    tfcard_driver_config();
+
+    //low speed mode
+    tfcard_spi_highspeed(TFCARD_LOW_SPEED);
     tfcard_spi_read_write(DUMMY_BYTE);
     //tfcard_enable();
 
@@ -259,7 +299,7 @@ int tfcard_init(void)
         #endif
 
         /* Set spi speed high */
-        //tfcard_SPIHighSpeed(1);
+        tfcard_spi_highspeed(TFCARD_HIGH_SPEED);
 
         /* CRC disable */
         r1 = tfcard_send_command(CMD59, 0, 0x01);
@@ -288,6 +328,7 @@ int tfcard_init(void)
 
     //取消片选，设为高速
     //tfcard_disable();
+    tfcard_spi_highspeed(TFCARD_HIGH_SPEED);
     Stat &= ~STA_NOINIT;
     return Stat;
 }
@@ -503,7 +544,7 @@ int tfcard_read_buffer(uint8_t *buff, uint16_t len, uint8_t release)
 int tfcard_ReadSingleBlock(uint32_t sector, uint8_t *buffer)
 {
     uint8_t r1;
-    //tfcard_SPIHighSpeed(1);
+    tfcard_spi_highspeed(TFCARD_HIGH_SPEED);
     /* if ver ！= SD2.0 HC, sector need <<9 */
     if(tfcard_info.CardType != CARDTYPE_SDV2HC)
     {
